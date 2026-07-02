@@ -87,3 +87,4 @@ namespace RC::LuaType
             });
         }
     }
+}
