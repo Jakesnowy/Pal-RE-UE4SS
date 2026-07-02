@@ -53,13 +53,29 @@ namespace RC::LuaType
     {
         table.add_pair("GetWorld", [](const LuaMadeSimple::Lua& lua) -> int {
             const auto& lua_object = lua.get_userdata<AActor>();
-            auto_construct_object(lua, lua_object.get_remote_cpp_object()->GetWorld());
+            auto* remote_obj = lua_object.get_remote_cpp_object();
+            
+            // Verify pointer and Unreal GC state before access
+            if (!remote_obj || remote_obj->IsUnreachable() || remote_obj->HasAnyFlags(Unreal::EObjectFlags::RF_BeginDestroyed)) {
+                lua.set_nil();
+                return 1;
+            }
+            
+            auto_construct_object(lua, remote_obj->GetWorld());
             return 1;
         });
 
         table.add_pair("GetLevel", [](const LuaMadeSimple::Lua& lua) -> int {
             const auto& lua_object = lua.get_userdata<AActor>();
-            auto_construct_object(lua, lua_object.get_remote_cpp_object()->GetLevel());
+            auto* remote_obj = lua_object.get_remote_cpp_object();
+            
+            // Verify pointer and Unreal GC state before access
+            if (!remote_obj || remote_obj->IsUnreachable() || remote_obj->HasAnyFlags(Unreal::EObjectFlags::RF_BeginDestroyed)) {
+                lua.set_nil();
+                return 1;
+            }
+            
+            auto_construct_object(lua, remote_obj->GetLevel());
             return 1;
         });
 
@@ -69,10 +85,5 @@ namespace RC::LuaType
                 lua.set_string(ClassName::ToString());
                 return 1;
             });
-
-            // If this is the final object then we also want to finalize creating the table
-            // If not then it's the responsibility of the overriding object to call 'make_global()'
-            // table.make_global(ClassName::ToString());
         }
     }
-} // namespace RC::LuaType
