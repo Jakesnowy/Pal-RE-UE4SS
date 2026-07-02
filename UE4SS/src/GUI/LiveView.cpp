@@ -272,10 +272,11 @@ namespace RC::GUI
 
         void NotifyUObjectCreated(const UObjectBase* object, int32 index) override
         {
-            if (s_live_view_destructed)
-            {
+            if (s_live_view_destructed) { return; }
+            if (LiveView::s_name_to_search_by.empty() && !LiveView::s_apply_search_filters_when_not_searching) {
                 return;
             }
+
             attempt_to_add_search_result(std::bit_cast<UObject*>(object), LiveView::s_apply_search_filters_when_not_searching);
         }
 
